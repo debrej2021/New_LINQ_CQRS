@@ -1,12 +1,14 @@
 ﻿using DotNet_Quick_ref_all.Dependency_i;
+using DotNet_Quick_ref_all.Elastic;
 using DotNet_Quick_ref_all.Infrastructure;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Nest;
 using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
-using DotNet_Quick_ref_all.Elastic;
+
 
 namespace DotNet_Quick_ref_all
 {
@@ -36,6 +38,13 @@ namespace DotNet_Quick_ref_all
             // Add your custom service — whenever Idependent is needed,
             // ASP.NET Core will inject Dependent_imp.
             builder.Services.AddScoped<Idependent, Dependent_imp>();
+            builder.Services.AddSingleton<IElasticClient>(
+    sp => ElasticClientFactory.Create("http://localhost:9200")
+);
+
+            builder.Services.AddScoped<ElasticIndexerService>();
+            builder.Services.AddScoped<ElasticSearchService>();
+
 
             // Add controller support (MVC Minimal pipeline)
             builder.Services.AddControllers();
@@ -58,9 +67,9 @@ namespace DotNet_Quick_ref_all
 
             //if (app.Environment.IsDevelopment())
             //{
-                app.UseSwagger();
-                app.UseSwaggerUI();
-          //  }
+            app.UseSwagger();
+            app.UseSwaggerUI();
+            //  }
             // -------------------------------------------------------
             // 4️⃣ RUN (Configure Middleware + Start Listening)
             // -------------------------------------------------------

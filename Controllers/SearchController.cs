@@ -3,11 +3,14 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using DotNet_Quick_ref_all.DTO;
 using DotNet_Quick_ref_all.Domain;
+//using System.Web.Http;
+using Microsoft.AspNetCore.Authorization;
 namespace DotNet_Quick_ref_all.Controllers
 {
     [Route("api/search")]
     [ApiController]
-    public class SearchController : Controller
+    [Authorize]
+    public class SearchController : ControllerBase
     {
         private readonly AppDBContext _db;
 
@@ -98,7 +101,10 @@ namespace DotNet_Quick_ref_all.Controllers
 
             return Ok(result);
         }
-
+        /// <summary>
+        /// inner join example
+        /// </summary>
+        /// <returns></returns>
         [HttpGet("inner-join")]
         public async Task<IActionResult> InnerJoin()
         {

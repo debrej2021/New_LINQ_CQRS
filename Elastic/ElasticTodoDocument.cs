@@ -9,5 +9,8 @@
         public string Title { get; set; } = string.Empty;
         public bool IsDone { get; set; }
         public string CategoryName { get; set; } = string.Empty;
+
+        public string? FullText { get; set; }
+
     }
 }
