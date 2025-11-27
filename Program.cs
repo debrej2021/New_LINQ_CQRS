@@ -1,6 +1,7 @@
 ﻿using DotNet_Quick_ref_all.Dependency_i;
 using DotNet_Quick_ref_all.Elastic;
 using DotNet_Quick_ref_all.Infrastructure;
+using DotNet_Quick_ref_all.OpenAI;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Migrations;
@@ -45,6 +46,8 @@ namespace DotNet_Quick_ref_all
             builder.Services.AddScoped<ElasticIndexerService>();
             builder.Services.AddScoped<ElasticSearchService>();
 
+            builder.Services.AddSingleton<OpenAiEmbeddingService>();
+            builder.Services.AddSingleton<OpenAiVectorSearchService>();
 
             // Add controller support (MVC Minimal pipeline)
             builder.Services.AddControllers();
