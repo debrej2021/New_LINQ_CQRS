@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using DotNet_Quick_ref_all.DTO;
+using DotNet_Quick_ref_all.Domain;
 namespace DotNet_Quick_ref_all.Controllers
 {
     [Route("api/search")]
@@ -82,12 +83,93 @@ namespace DotNet_Quick_ref_all.Controllers
                     // These will just be empty for now
                     StatusName = null,
                     Tags = new List<string>()
-                })
+                }).Distinct()
                 .ToListAsync();
+
+            //var resultInner = await _db.TodoItems
+            //           .Where(t => t.Category != null)
+            //           .Select(t => new TodoSearchResultDto
+            //           {
+            //               Id = t.Id,
+            //               Title = t.Title,
+            //               IsDone = t.IsDone,
+            //               CategoryName = t.Category.Name
+            //           }).ToListAsync();
 
             return Ok(result);
         }
 
+        [HttpGet("inner-join")]
+        public async Task<IActionResult> InnerJoin()
+        {
+            var resultInner = await _db.TodoItems
+                       .Where(t => t.Category != null)
+                       .Select(t => new TodoSearchResultDto
+                       {
+                           Id = t.Id,
+                           Title = t.Title,
+                           IsDone = t.IsDone,
+                           CategoryName = t.Category.Name
+                       }).ToListAsync();
 
+            return Ok(resultInner);
+        }
+        /// <summary>
+        /// cross join example
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet("cross-join")]
+        public async Task<IActionResult> CrossJoin()
+        {
+            var resCat = _db.Categories
+                        .Select(c => c.Name)
+                        .Distinct();
+            //var resultInner = await _db.TodoItems
+            //           .Where(t => t.Category != null)
+            //           .Select(t => new TodoSearchResultDto
+            //           {
+            //               Id = t.Id,
+            //               Title = t.Title,
+            //               IsDone = t.IsDone,
+            //               CategoryName = t.Category.Name
+            //           }).ToListAsync();
+
+            var result =
+    await (from c in resCat          // c = string (category name)
+           from t in _db.TodoItems   // t = TodoItem
+           select new
+           {
+               CategoryName = c,
+               TodoTitle = t.Title
+           })
+    .ToListAsync();
+
+
+            return Ok(result);
+        }
+
+        /// <summary>
+        /// Retrieves a distinct list of category and to-do item title pairs.
+        /// </summary>
+        /// <remarks>This method queries the database for to-do items that are associated with a category,
+        /// and returns a collection of unique pairs consisting of the category name and the to-do item title.</remarks>
+        /// <returns>An <see cref="IActionResult"/> containing a collection of unique category and to-do item title pairs. Each
+        /// pair includes the category name and the to-do item title.</returns>
+        [HttpGet("categories-todos/distinct")]
+        public async Task<IActionResult> GetDistinctCategoryTodoPairs()
+        {
+            var result = await _db.TodoItems
+                .Include(t => t.Category)
+                .Where(t => t.Category != null)
+                .Select(t => new
+                {
+                    CategoryName = t.Category!.Name,
+                    TodoTitle = t.Title
+                })
+                .Distinct()
+                .ToListAsync();
+
+            return Ok(result);
+        }
     }
 }

@@ -6,6 +6,8 @@ using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
+using DotNet_Quick_ref_all.Elastic;
+
 namespace DotNet_Quick_ref_all
 {
     internal class Program
