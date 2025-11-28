@@ -1,13 +1,18 @@
 ﻿using DotNet_Quick_ref_all.Dependency_i;
 using DotNet_Quick_ref_all.Elastic;
+using DotNet_Quick_ref_all.FuzzySearch;
+using DotNet_Quick_ref_all.HybridSearch;
 using DotNet_Quick_ref_all.Infrastructure;
 using DotNet_Quick_ref_all.OpenAI;
+using DotNet_Quick_ref_all.Services.Auth;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.IdentityModel.Tokens;
 using Nest;
+using System.Text;
 using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 
@@ -48,11 +53,36 @@ namespace DotNet_Quick_ref_all
 
             builder.Services.AddSingleton<OpenAiEmbeddingService>();
             builder.Services.AddSingleton<OpenAiVectorSearchService>();
-
+            builder.Services.AddScoped<FuzzySearchService>();
+            builder.Services.AddScoped<FuzzySearchServiceDUM>();
+            builder.Services.AddScoped<SmartFuzzySearchService>();
+            builder.Services.AddScoped<HybridSearchService>();
             // Add controller support (MVC Minimal pipeline)
             builder.Services.AddControllers();
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
+
+            var jwt = builder.Configuration.GetSection("Jwt");
+
+            builder.Services
+                .AddAuthentication("Bearer")
+                .AddJwtBearer("Bearer", options =>
+                {
+                    options.TokenValidationParameters = new TokenValidationParameters
+                    {
+                        ValidateIssuer = true,
+                        ValidateAudience = true,
+                        ValidateLifetime = true,
+                        ValidateIssuerSigningKey = true,
+                        ValidIssuer = jwt["Issuer"],
+                        ValidAudience = jwt["Audience"],
+                        IssuerSigningKey = new SymmetricSecurityKey(
+                            Encoding.UTF8.GetBytes(jwt["Key"]))
+                    };
+                });
+
+            builder.Services.AddAuthorization();
+            builder.Services.AddScoped<TokenService>();
 
             /// Example of Minimal API endpoint (commented out)
             //var app = builder.Build();
@@ -72,6 +102,9 @@ namespace DotNet_Quick_ref_all
             //{
             app.UseSwagger();
             app.UseSwaggerUI();
+            app.UseAuthentication();
+            app.UseAuthorization();
+
             //  }
             // -------------------------------------------------------
             // 4️⃣ RUN (Configure Middleware + Start Listening)
